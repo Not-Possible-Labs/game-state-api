@@ -40,6 +40,25 @@ graph TD;
     L[Player disconnects] --> M[Client calls matchmaking-api to rejoin]
 ```
 
+## Game State API Logic
+```mermaid
+graph TD;
+    A[Start] --> B[Receive WebSocket connection]
+    B --> C{Validate connection}
+    C -->|Valid| D[Subscribe to Redis channel]
+    C -->|Invalid| E[Close connection]
+    D --> F[Listen for gameplay events]
+    F --> G{Process event}
+    G -->|Move| H[Update game state]
+    G -->|Timer| I[Update timer]
+    G -->|Resignation| J[Handle resignation]
+    H --> K[Broadcast updated state]
+    I --> K
+    J --> K
+    K --> L[End]
+    E --> L
+```
+
 ## Matchmaking Service Logic
 ```mermaid
 graph TD;
