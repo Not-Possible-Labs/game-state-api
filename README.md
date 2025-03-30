@@ -40,6 +40,24 @@ graph TD;
     L[Player disconnects] --> M[Client calls matchmaking-api to rejoin]
 ```
 
+## Matchmaking Service Logic
+```mermaid
+graph TD;
+    A[Start] --> B[Receive match request]
+    B --> C{Check available servers}
+    C -->|Yes| D[Query Redis for server list]
+    C -->|No| E[Wait and retry]
+    D --> F[Evaluate server load and region]
+    F --> G{Select best server}
+    G -->|Success| H[Assign server to match ID]
+    G -->|Failure| I[Log error and notify user]
+    H --> J[Store server info in Redis]
+    J --> K[Send connection info to players]
+    K --> L[End]
+    E --> B
+    I --> L
+```
+
 ## Usage
 - **Registering Servers**: Game state API servers register themselves in Redis with their ID, IP, port, region, and load.
 - **Heartbeat**: Servers update their status and TTL periodically to maintain active status.
