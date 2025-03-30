@@ -16,7 +16,64 @@ The architecture consists of two main components:
 1. **Game State API**: Handles WebSocket connections and manages game state.
 2. **Matchmaking API**: Selects the best game state server for players to connect to.
 
-## Communication Flow
+## Dependencies
+- Redis
+- WebSockets
+
+## Installation
+1. Clone the repository.
+2. Install dependencies.
+3. Configure Redis and WebSocket settings.
+4. Run the server.
+
+## Usage
+- **Registering Servers**: Game state API servers register themselves in Redis with their ID, IP, port, region, and load.
+- **Heartbeat**: Servers update their status and TTL periodically to maintain active status.
+- **Matchmaking**: The matchmaking API queries Redis to find the best server for a match, considering load and region.
+- **Connection**: Players receive connection info and connect to the assigned game state API instance.
+- **Gameplay**: All real-time events are managed through the game state API.
+- **Reconnection**: If a player disconnects, they can reconnect using the matchmaking API to retrieve server info.
+
+## System Flow Diagrams
+
+### 1. Game State API Logic
+```mermaid
+graph TD;
+    A[Start] --> B[Receive WebSocket connection]
+    B --> C{Validate connection}
+    C -->|Valid| D[Subscribe to Redis channel]
+    C -->|Invalid| E[Close connection]
+    D --> F[Listen for gameplay events]
+    F --> G{Process event}
+    G -->|Move| H[Update game state]
+    G -->|Timer| I[Update timer]
+    G -->|Resignation| J[Handle resignation]
+    H --> K[Broadcast updated state]
+    I --> K
+    J --> K
+    K --> L[End]
+    E --> L
+```
+
+### 2. Matchmaking Service Logic
+```mermaid
+graph TD;
+    A[Start] --> B[Receive match request]
+    B --> C{Check available servers}
+    C -->|Yes| D[Query Redis for server list]
+    C -->|No| E[Wait and retry]
+    D --> F[Evaluate server load and region]
+    F --> G{Select best server}
+    G -->|Success| H[Assign server to match ID]
+    G -->|Failure| I[Log error and notify user]
+    H --> J[Store server info in Redis]
+    J --> K[Send connection info to players]
+    K --> L[End]
+    E --> B
+    I --> L
+```
+
+### 3. Complete System Communication Flow
 ```mermaid
 graph TD;
     subgraph Redis
@@ -39,61 +96,6 @@ graph TD;
     I --> K
     L[Player disconnects] --> M[Client calls matchmaking-api to rejoin]
 ```
-
-## Game State API Logic
-```mermaid
-graph TD;
-    A[Start] --> B[Receive WebSocket connection]
-    B --> C{Validate connection}
-    C -->|Valid| D[Subscribe to Redis channel]
-    C -->|Invalid| E[Close connection]
-    D --> F[Listen for gameplay events]
-    F --> G{Process event}
-    G -->|Move| H[Update game state]
-    G -->|Timer| I[Update timer]
-    G -->|Resignation| J[Handle resignation]
-    H --> K[Broadcast updated state]
-    I --> K
-    J --> K
-    K --> L[End]
-    E --> L
-```
-
-## Matchmaking Service Logic
-```mermaid
-graph TD;
-    A[Start] --> B[Receive match request]
-    B --> C{Check available servers}
-    C -->|Yes| D[Query Redis for server list]
-    C -->|No| E[Wait and retry]
-    D --> F[Evaluate server load and region]
-    F --> G{Select best server}
-    G -->|Success| H[Assign server to match ID]
-    G -->|Failure| I[Log error and notify user]
-    H --> J[Store server info in Redis]
-    J --> K[Send connection info to players]
-    K --> L[End]
-    E --> B
-    I --> L
-```
-
-## Usage
-- **Registering Servers**: Game state API servers register themselves in Redis with their ID, IP, port, region, and load.
-- **Heartbeat**: Servers update their status and TTL periodically to maintain active status.
-- **Matchmaking**: The matchmaking API queries Redis to find the best server for a match, considering load and region.
-- **Connection**: Players receive connection info and connect to the assigned game state API instance.
-- **Gameplay**: All real-time events are managed through the game state API.
-- **Reconnection**: If a player disconnects, they can reconnect using the matchmaking API to retrieve server info.
-
-## Dependencies
-- Redis
-- WebSockets
-
-## Installation
-1. Clone the repository.
-2. Install dependencies.
-3. Configure Redis and WebSocket settings.
-4. Run the server.
 
 ## Contributing
 Contributions are welcome! Please submit a pull request or open an issue for any bugs or feature requests.
