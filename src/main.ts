@@ -31,7 +31,7 @@ app.use(tasksRouter);
 const openApiSpec = {
   openapi: "3.0.0",
   info: {
-    title: "Auth API",
+    title: "Game State API",
     version: "1.0.0",
     description: "A simple REST API built with Deno and Express",
   },
