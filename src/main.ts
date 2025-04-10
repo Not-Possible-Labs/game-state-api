@@ -36,7 +36,7 @@ const openApiSpec = {
     description: "A simple REST API built with Deno and Express",
   },
   servers:
-    env === "dev"
+    env === "local"
       ? [
         {
           url: "http://localhost:8000",
@@ -120,7 +120,7 @@ const startServer = async () => {
     await initDatabase();
 
     app.listen(port, () => {
-      const baseUrl = env === "dev" ? `http://localhost:${port}` : host;
+      const baseUrl = env === "local" ? `http://localhost:${port}` : host;
       console.log("\x1b[32m%s\x1b[0m", `✨ Server running at ${baseUrl}`);
       console.log("\x1b[36m%s\x1b[0m", `📚 API Documentation available at ${baseUrl}/api-docs`);
       console.log("\x1b[36m%s\x1b[0m", `📚 Swagger UI available at ${baseUrl}/swagger-docs`);
